@@ -1,0 +1,5 @@
+uuid_generate_v4(), 'Chuyen Doi Ta', 'DA LAB', 'Chuyen Doi Ta (single)', 'VPOP', './music/ChuyenDoiTa.mp3'
+uuid_generate_v4(), 'Anh Nho Ra', 'Vu', 'Mot Van Nam', 'Rock', './music/AnhNhoRa.mp3'
+uuid_generate_v4(), 'Di Qua Mua Ha', 'Thai Dinh', 'Di Qua Mua Ha (single)', 'VPOP', './music/DiQuaMuaHa.mp3'
+uuid_generate_v4(), 'Hon Em Cho Nao', 'Thuy Chi', 'Hon Em Cho Nao (single)', 'VPOP', './music/HonEmChoNao.mp3'
+uuid_generate_v4(), 'Loi Tam Biet Chua Noi', 'GREY D, Orange', 'Huong Mua Ha', 'VPOP', './music/LoiTamBietChuaNoi.mp3'
