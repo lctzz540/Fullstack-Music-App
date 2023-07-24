@@ -4,6 +4,7 @@ import { AntDesign, Feather } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import { setIsPlaying, setProgress } from "../redux/slices/songSlice";
+import AddToLibraryButton from "./AddToLibraryButton";
 
 const ControlBar: React.FC = () => {
   const dispatch = useDispatch();
@@ -14,6 +15,7 @@ const ControlBar: React.FC = () => {
   const isPlaying = useSelector((state: RootState) => state.song.isPlaying);
   const duration = useSelector((state: RootState) => state.song.duration);
   const progress = useSelector((state: RootState) => state.song.progress);
+  const songID = useSelector((state: RootState) => state.song.songPlaying?.id);
 
   useEffect(() => {
     let progressInterval: NodeJS.Timeout | null = null;
@@ -70,6 +72,7 @@ const ControlBar: React.FC = () => {
           </View>
         </View>
         <Text style={styles.progressText}>{formatTime(duration)}</Text>
+        {songID && <AddToLibraryButton songID={songID} />}
       </View>
     </View>
   ) : (
