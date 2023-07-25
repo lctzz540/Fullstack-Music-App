@@ -2,6 +2,7 @@ import React from "react";
 import { Text, Image, TouchableOpacity, StyleSheet, View } from "react-native";
 import useSongPlayer from "../hooks/useSongPlayer";
 import AddToLibraryButton from "./AddToLibraryButton";
+import { API_URL } from "@env";
 
 interface SongItemProps {
   item: any;
@@ -19,7 +20,7 @@ const SongItem: React.FC<SongItemProps> = ({ item }) => {
       <TouchableOpacity onPress={handlePlaySong} style={styles.songContainer}>
         <Image
           source={{
-            uri: "http://localhost:3000/api/songs/getsongimage?id=" + item.id,
+            uri: `${API_URL}/api/songs/getsongimage?id=` + item.id,
           }}
           style={styles.avatar}
         />

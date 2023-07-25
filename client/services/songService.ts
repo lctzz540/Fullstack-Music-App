@@ -1,6 +1,7 @@
 import axios from "axios";
+import { API_URL } from "@env";
 
-const API_BASE_URL = "http://localhost:3000/api/songs";
+const API_BASE_URL = `${API_URL}/api/songs`;
 
 export interface Song {
   id: string;

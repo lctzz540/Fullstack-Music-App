@@ -13,6 +13,7 @@ import { Feather, Entypo } from "@expo/vector-icons";
 import useSongPlayer from "../hooks/useSongPlayer";
 import axios from "axios";
 import { SongResponse } from "../services/songService";
+import { API_URL } from "@env";
 
 const SearchBar = () => {
   const [searchPhrase, setSearchPhrase] = useState<string>("");
@@ -23,7 +24,7 @@ const SearchBar = () => {
   useEffect(() => {
     const getData = async () => {
       const apiResponse = await axios.get(
-        "http://localhost:3000/api/songs?title=" + searchPhrase
+        `{API_URL}/api/songs?title=` + searchPhrase
       );
       const data = await apiResponse.data;
       setSearchData(data);

@@ -1,6 +1,5 @@
 import axios, { AxiosResponse } from "axios";
-import { useSelector } from "react-redux";
-import { RootState } from "../redux/store";
+import { API_URL } from "@env";
 
 interface LoginData {
   email: string;
@@ -28,7 +27,7 @@ interface SignupResponse {
   success: boolean;
   message: string;
 }
-const API_BASE_URL = "http://localhost:3000/api/auth";
+const API_BASE_URL = `${API_URL}/api/auth`;
 
 const authService = {
   signup: async (
@@ -99,13 +98,10 @@ export const addToLibraryService = async ({
   songID,
 }: AddToLibraryRequest) => {
   try {
-    const response = await axios.post(
-      "http://localhost:3000/api/auth/addtolibrary",
-      {
-        userID: userID,
-        songID: songID,
-      }
-    );
+    const response = await axios.post(`${API_BASE_URL}/api/auth/addtolibrary`, {
+      userID: userID,
+      songID: songID,
+    });
     return response.data as AddToLibraryResponse;
   } catch (error) {
     console.error("Failed to add song to library:", error);
@@ -119,7 +115,7 @@ export const removeFromLibraryService = async ({
 }: AddToLibraryRequest) => {
   try {
     const response = await axios.delete(
-      `http://localhost:3000/api/auth/removefromlibrary`,
+      `${API_BASE_URL}/api/auth/removefromlibrary`,
       {
         data: {
           userID: userID,

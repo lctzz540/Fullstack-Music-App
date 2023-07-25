@@ -2,6 +2,7 @@ import { useNavigation } from "@react-navigation/native";
 import React from "react";
 import { View, Image, Text, StyleSheet } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import { API_URL } from "@env";
 
 interface ArtistAvatarProps {
   name: string;
@@ -9,7 +10,7 @@ interface ArtistAvatarProps {
 }
 
 const ArtistAvatar: React.FC<ArtistAvatarProps> = ({ name, id }) => {
-  const avatarUrl = "http://localhost:3000/api/songs/getavartar/?id=" + id;
+  const avatarUrl = `${API_URL}/api/songs/getavartar/?id=` + id;
   const navigation = useNavigation();
 
   const handleClick = (id: string) => {

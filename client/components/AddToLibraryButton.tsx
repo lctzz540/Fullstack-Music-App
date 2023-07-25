@@ -9,6 +9,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import axios from "axios";
 import { useIsFocused } from "@react-navigation/native";
+import { API_URL } from "@env";
 
 interface AddToLibraryButtonProps {
   songID: string;
@@ -23,7 +24,7 @@ const AddToLibraryButton: React.FC<AddToLibraryButtonProps> = ({ songID }) => {
     const checkSongInLibrary = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3000/api/auth/checksonginlibrary?userID=${userID}&songID=${songID}`
+          `${API_URL}/api/auth/checksonginlibrary?userID=${userID}&songID=${songID}`
         );
         setIsInLibrary(response.data.success);
       } catch (error) {
