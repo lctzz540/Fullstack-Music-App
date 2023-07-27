@@ -22,7 +22,7 @@ func FindSongByTitleHandler(c *fiber.Ctx) error {
 	songTitle := c.Query("title")
 
 	var songs []model.Song
-	result := database.DB.Where("title LIKE ?", "%"+songTitle+"%").Find(&songs)
+	result := database.DB.Where("title ILIKE ?", "%"+songTitle+"%").Find(&songs)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
@@ -46,7 +46,28 @@ func FindSongByTitleHandler(c *fiber.Ctx) error {
 
 	return c.JSON(songResponses)
 }
-
+func GetSongById(c *fiber.Ctx) error {
+	songID := c.Query("id")
+	song := model.Song{}
+	result := database.DB.First(&song, "id = ?", songID)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"message": "Songs not found",
+			})
+		}
+		log.Println("Database error:", result.Error)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Internal Server Error",
+		})
+	}
+	songResponse := SongResponse{
+		ID:    song.ID,
+		Title: song.Title,
+		Genre: song.Genre,
+	}
+	return c.JSON(songResponse)
+}
 func GetSongImage(c *fiber.Ctx) error {
 	songID := c.Query("id")
 	song := model.Song{}

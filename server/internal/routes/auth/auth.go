@@ -13,4 +13,5 @@ func SetupAuthRoutes(router fiber.Router) {
 	auth.Post("/addtolibrary", handler.AddToLibraryHandler)
 	auth.Get("/checksonginlibrary", handler.CheckSongInLibraryHandler)
 	auth.Delete("/removefromlibrary", handler.RemoveFromLibraryHandler)
+	auth.Put("/updateprofile/:userID", handler.UpdateUserHandler)
 }

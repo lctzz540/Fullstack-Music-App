@@ -16,6 +16,7 @@ import {
   pauseSong,
 } from "../redux/slices/songSlice";
 import SongItem from "../components/SongItem";
+import { API_URL } from "@env";
 
 type ArtistScreenProps = {
   route: RouteProp<RootStackParamList, "ArtistScreen">;
@@ -32,8 +33,7 @@ const ArtistScreen: React.FC<ArtistScreenProps & ReduxProps> = ({
   songs,
 }) => {
   const { artistName, artistId } = route.params;
-  const avatarUrl =
-    "http://localhost:3000/api/songs/getavartar/?id=" + artistId;
+  const avatarUrl = `${API_URL}/api/songs/getavartar/?id=` + artistId;
 
   const dispatch = useDispatch();
 

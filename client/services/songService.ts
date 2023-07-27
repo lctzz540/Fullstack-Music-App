@@ -114,3 +114,17 @@ export const getSongsInLibraryService = async (
     throw error;
   }
 };
+
+export const findArtistByName = async (name: string): Promise<Artist[]> => {
+  try {
+    const response = await axios.get<Artist[]>(`${API_BASE_URL}/findartist`, {
+      params: {
+        name: name,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to find artists by name:", error);
+    throw error;
+  }
+};

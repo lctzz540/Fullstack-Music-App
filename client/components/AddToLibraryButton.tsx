@@ -49,7 +49,7 @@ const AddToLibraryButton: React.FC<AddToLibraryButtonProps> = ({ songID }) => {
   };
 
   return (
-    <TouchableOpacity onPress={handleAddToLibrary}>
+    <TouchableOpacity onPress={handleAddToLibrary} style={{ marginRight: 10 }}>
       {isInLibrary ? (
         <Ionicons name="heart" size={24} color="red" />
       ) : (

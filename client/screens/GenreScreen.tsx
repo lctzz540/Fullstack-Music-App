@@ -1,13 +1,6 @@
 import { RouteProp } from "@react-navigation/native";
 import React, { useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Image,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { useDispatch, connect } from "react-redux";
 import { getSongByGenre } from "../services/songService";
 import { RootStackParamList } from "../App";

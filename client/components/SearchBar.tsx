@@ -7,13 +7,14 @@ import {
   Button,
   FlatList,
   Text,
-  Image,
 } from "react-native";
 import { Feather, Entypo } from "@expo/vector-icons";
-import useSongPlayer from "../hooks/useSongPlayer";
 import axios from "axios";
-import { SongResponse } from "../services/songService";
+import { findArtistByName, SongResponse } from "../services/songService";
 import { API_URL } from "@env";
+import { useNavigation } from "@react-navigation/native";
+import { useDispatch } from "react-redux";
+import { playSong } from "../redux/slices/songSlice";
 
 const SearchBar = () => {
   const [searchPhrase, setSearchPhrase] = useState<string>("");
@@ -23,22 +24,52 @@ const SearchBar = () => {
 
   useEffect(() => {
     const getData = async () => {
-      const apiResponse = await axios.get(
-        `{API_URL}/api/songs?title=` + searchPhrase
-      );
-      const data = await apiResponse.data;
-      setSearchData(data);
+      try {
+        const songResponse = await axios.get(
+          `${API_URL}/api/songs?title=${searchPhrase}`
+        );
+        const artistResponse = await findArtistByName(searchPhrase);
+
+        const songs = songResponse.data || [];
+        const artists = artistResponse || [];
+
+        const suggestionsData = [
+          ...songs.map((song: SongResponse) => ({
+            type: "song",
+            item: song,
+          })),
+          ...(artists.length != 0
+            ? artists.map((artist: any) => ({
+                type: "artist",
+                item: artist,
+              }))
+            : []),
+        ];
+
+        setSearchData(suggestionsData);
+      } catch (error) {
+        console.error("Failed to fetch suggestions:", error);
+      }
     };
+
     getData();
   }, [searchPhrase]);
 
   const handleInputChange = (text: string) => {
     setSearchPhrase(text);
   };
-  const playSong = useSongPlayer();
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
 
-  const handleSuggestionClick = (suggestion: SongResponse) => {
-    playSong(suggestion);
+  const handleSuggestionClick = (suggestion: any) => {
+    if (suggestion.type === "song") {
+      dispatch(playSong(suggestion.item));
+    } else if (suggestion.type === "artist") {
+      navigation.navigate("Artist", {
+        artistName: suggestion.item.name,
+        artistId: suggestion.item.id,
+      });
+    }
     setClicked(false);
     setSearchPhrase("");
     setSuggestions([]);
@@ -47,10 +78,7 @@ const SearchBar = () => {
   useEffect(() => {
     if (searchPhrase && clicked) {
       if (searchData) {
-        const filteredSuggestions = searchData.filter((item) =>
-          item.title.toLowerCase().includes(searchPhrase.toLowerCase())
-        );
-        setSuggestions(filteredSuggestions);
+        setSuggestions(searchData);
       }
     } else {
       setSuggestions([]);
@@ -107,30 +135,21 @@ const SearchBar = () => {
             data={suggestions}
             renderItem={({ item }) => (
               <View style={styles.suggestionItemContainer}>
-                <Image
-                  source={{
-                    uri:
-                      "http://localhost:3000/api/songs/getsongimage?id=" +
-                      item.id,
-                  }}
-                  style={styles.avatar}
-                />
                 <Text
                   onPress={() => handleSuggestionClick(item)}
                   style={styles.suggestionItem}
                 >
-                  {item.title}
+                  {item.type === "song" ? item.item.title : item.item.name}
                 </Text>
               </View>
             )}
-            keyExtractor={(item) => item.ID}
+            keyExtractor={(item) => item.item.id}
           />
         </View>
       )}
     </View>
   );
 };
-
 export default SearchBar;
 
 const styles = StyleSheet.create({

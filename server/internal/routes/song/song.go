@@ -17,4 +17,6 @@ func SetupSongRoutes(router fiber.Router) {
 	songs.Get("/getduration", song.GetDurationHandler)
 	songs.Get("/getsongbygenre", song.GetSongsByGenre)
 	songs.Get("/getsongsinlibrary", song.GetSongsInLibrary)
+	songs.Get("/findartist", song.FindArtistHandler)
+	songs.Get("/getsongbyid", song.GetSongById)
 }

@@ -43,7 +43,7 @@ const authService = {
           },
         }
       );
-      return response.data;
+      return response;
     } catch (error) {
       throw error;
     }
@@ -98,7 +98,7 @@ export const addToLibraryService = async ({
   songID,
 }: AddToLibraryRequest) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/api/auth/addtolibrary`, {
+    const response = await axios.post(`${API_BASE_URL}/addtolibrary`, {
       userID: userID,
       songID: songID,
     });
@@ -114,18 +114,34 @@ export const removeFromLibraryService = async ({
   songID,
 }: AddToLibraryRequest) => {
   try {
-    const response = await axios.delete(
-      `${API_BASE_URL}/api/auth/removefromlibrary`,
+    const response = await axios.delete(`${API_BASE_URL}/removefromlibrary`, {
+      data: {
+        userID: userID,
+        songID: songID,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to remove song from library:", error);
+    throw error;
+  }
+};
+export const updateProfile = async (
+  userId: string,
+  firstName: string,
+  lastName: string
+) => {
+  try {
+    const response = await axios.put(
+      `${API_BASE_URL}/updateprofile/${userId}`,
       {
-        data: {
-          userID: userID,
-          songID: songID,
-        },
+        firstName: firstName,
+        lastName: lastName,
       }
     );
     return response.data;
   } catch (error) {
-    console.error("Failed to remove song from library:", error);
+    console.error("Failed to update profile:", error);
     throw error;
   }
 };

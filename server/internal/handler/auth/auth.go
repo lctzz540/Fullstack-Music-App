@@ -78,3 +78,48 @@ func SignupHandler(c *fiber.Ctx) error {
 
 	return c.SendString("Signup successful")
 }
+
+type UpdateUserRequest struct {
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+}
+
+func UpdateUserHandler(c *fiber.Ctx) error {
+	userID := c.Params("userID")
+	var updateUserReq UpdateUserRequest
+
+	if err := c.BodyParser(&updateUserReq); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid request",
+		})
+	}
+
+	var user model.User
+	result := database.DB.First(&user, "id = ?", userID)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"message": "User not found",
+			})
+		}
+		log.Println("Database error:", result.Error)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Internal Server Error",
+		})
+	}
+
+	user.FirstName = updateUserReq.FirstName
+	user.LastName = updateUserReq.LastName
+
+	result = database.DB.Save(&user)
+	if result.Error != nil {
+		log.Println("Failed to update user:", result.Error)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to update user",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"message": "User updated successfully",
+	})
+}

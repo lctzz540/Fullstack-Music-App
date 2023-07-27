@@ -1,12 +1,12 @@
-import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View, FlatList } from "react-native";
-import { Button, Text } from "react-native-elements";
+import { Button, Input, Text } from "react-native-elements";
 import { useDispatch, useSelector } from "react-redux";
 import ControlBar from "../components/ControlBar";
 import { logout } from "../redux/actions/authActions";
 import { AppDispatch, RootState } from "../redux/store";
-import { getProfile } from "../services/authService";
+import { getProfile, updateProfile } from "../services/authService";
+import { useIsFocused, useNavigation } from "@react-navigation/native";
 
 interface Profile {
   label: string;
@@ -16,8 +16,12 @@ interface Profile {
 export const Profile: React.FC = () => {
   const userId = useSelector((state: RootState) => state.auth.user?.id);
   const [profile, setProfile] = useState<Profile[]>([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const dispatch = useDispatch<AppDispatch>();
   const navigation = useNavigation();
+  const isFocused = useIsFocused();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -37,7 +41,7 @@ export const Profile: React.FC = () => {
     };
 
     fetchProfile();
-  }, [userId]);
+  }, [userId, isFocused]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -45,8 +49,26 @@ export const Profile: React.FC = () => {
       index: 0,
       routes: [{ name: "Login" }],
     });
+  };
 
-    console.log("Logged out");
+  const handleUpdateProfile = async () => {
+    try {
+      if (userId) {
+        await updateProfile(userId, firstName, lastName);
+      }
+
+      const profileData = await getProfile(userId);
+      const profileItems: Profile[] = [
+        { label: "Email:", value: profileData.Email },
+        { label: "First name:", value: profileData.firstname },
+        { label: "Last name:", value: profileData.lastname },
+      ];
+      setProfile(profileItems);
+
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+    }
   };
 
   const renderItem = ({ item }: { item: Profile }) => (
@@ -57,22 +79,62 @@ export const Profile: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <View>
-        <Text style={styles.title}>Your Profile</Text>
-        <FlatList
-          data={profile}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.label}
-          showsHorizontalScrollIndicator={false}
-        />
-        <Button
-          title="Logout"
-          onPress={handleLogout}
-          containerStyle={styles.buttonContainer}
-          buttonStyle={styles.button}
-          titleStyle={styles.buttonText}
-        />
-      </View>
+      <Text style={styles.title}>Your Profile</Text>
+      {isEditing ? (
+        <>
+          <Input
+            label="First Name"
+            value={firstName}
+            onChangeText={setFirstName}
+            containerStyle={styles.inputContainer}
+          />
+          <Input
+            label="Last Name"
+            value={lastName}
+            onChangeText={setLastName}
+            containerStyle={styles.inputContainer}
+          />
+          <Button
+            title="Save"
+            onPress={handleUpdateProfile}
+            containerStyle={styles.buttonContainer}
+            buttonStyle={styles.button}
+            titleStyle={styles.buttonText}
+          />
+          <Button
+            title="Cancel"
+            onPress={() => setIsEditing(false)}
+            containerStyle={styles.buttonContainer}
+            buttonStyle={styles.cancelButton}
+            titleStyle={styles.buttonText}
+          />
+        </>
+      ) : (
+        <>
+          <FlatList
+            data={profile}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.label}
+            showsHorizontalScrollIndicator={false}
+          />
+          <View style={{ flex: 1 }}>
+            <Button
+              title="Update Profile"
+              onPress={() => setIsEditing(true)}
+              containerStyle={styles.buttonContainer}
+              buttonStyle={styles.button}
+              titleStyle={styles.buttonText}
+            />
+            <Button
+              title="Logout"
+              onPress={handleLogout}
+              containerStyle={styles.buttonContainer}
+              buttonStyle={styles.button}
+              titleStyle={styles.buttonText}
+            />
+          </View>
+        </>
+      )}
       <View style={styles.controlBarContainer}>
         <ControlBar />
       </View>
@@ -99,6 +161,9 @@ const styles = StyleSheet.create({
   label: {
     fontWeight: "bold",
   },
+  inputContainer: {
+    marginBottom: 20,
+  },
   buttonContainer: {
     width: "100%",
     alignItems: "center",
@@ -108,6 +173,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 5,
+    marginBottom: 10,
+  },
+  cancelButton: {
+    backgroundColor: "gray",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 5,
+    marginBottom: 10,
   },
   buttonText: {
     fontSize: 18,

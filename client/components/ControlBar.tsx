@@ -1,10 +1,19 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { AntDesign, Feather } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../redux/store";
-import { setIsPlaying, setProgress } from "../redux/slices/songSlice";
+import {
+  playSong,
+  setIsPlaying,
+  setProgress,
+  shufflePlaylist,
+} from "../redux/slices/songSlice";
 import AddToLibraryButton from "./AddToLibraryButton";
+import PlaylistFloatingList from "./PlaylistFloatingList";
+import axios from "axios";
+import { API_URL } from "@env";
+import { SongResponse } from "../services/songService";
 
 const ControlBar: React.FC = () => {
   const dispatch = useDispatch();
@@ -16,6 +25,29 @@ const ControlBar: React.FC = () => {
   const duration = useSelector((state: RootState) => state.song.duration);
   const progress = useSelector((state: RootState) => state.song.progress);
   const songID = useSelector((state: RootState) => state.song.songPlaying?.id);
+  const [showPlaylist, setShowPlaylist] = useState(false);
+  const playlistSongIds = useSelector(
+    (state: RootState) => state.song.playlist
+  );
+
+  const handleControlBarPress = () => {
+    setShowPlaylist(!showPlaylist);
+  };
+  const playNextSong = () => {
+    const currentIndex = playlistSongIds.findIndex((Id) => Id === songID);
+    if (currentIndex >= 0 && currentIndex < playlistSongIds.length - 1) {
+      const nextSongId = playlistSongIds[currentIndex + 1];
+      axios
+        .get(`${API_URL}/api/songs/getsongbyid?id=${nextSongId}`)
+        .then((response: any) => {
+          const nextSong: SongResponse = response.data;
+          dispatch(playSong(nextSong));
+        })
+        .catch((error: Error) => {
+          console.error("Failed to fetch the next song:", error);
+        });
+    }
+  };
 
   useEffect(() => {
     let progressInterval: NodeJS.Timeout | null = null;
@@ -24,6 +56,14 @@ const ControlBar: React.FC = () => {
         const currentTime = progress + 1;
         dispatch(setProgress(currentTime));
       }, 1000);
+    } else {
+      if (
+        !isPlaying &&
+        playlistSongIds.length != 0 &&
+        progress == duration - 1
+      ) {
+        playNextSong();
+      }
     }
 
     return () => {
@@ -39,18 +79,48 @@ const ControlBar: React.FC = () => {
     return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
   };
   const handlePlayPause = () => {
-    if (isPlaying && player) {
-      player.pause();
-      dispatch(setIsPlaying(false));
-    } else {
-      player && player.play();
-      dispatch(setIsPlaying(true));
+    if (player) {
+      if (isPlaying) {
+        player.pause();
+        dispatch(setIsPlaying(false));
+      } else {
+        player.play();
+        dispatch(setIsPlaying(true));
+      }
+    }
+  };
+  const handlePlayback = () => {
+    if (player && progress > 5) {
+      player.prepare();
+      player.play();
+      dispatch(setProgress(0));
+    } else if (player) {
+      const currentIndex = playlistSongIds.findIndex((Id) => Id === songID);
+      if (currentIndex >= 0 && currentIndex > 0) {
+        const previousSongId = playlistSongIds[currentIndex - 1];
+        axios
+          .get(`${API_URL}/api/songs/getsongbyid?id=${previousSongId}`)
+          .then((response: any) => {
+            const previousSong: SongResponse = response.data;
+            dispatch(playSong(previousSong));
+          })
+          .catch((error: Error) => {
+            console.error("Failed to fetch the next song:", error);
+          });
+      }
     }
   };
   return player ? (
     <View>
-      <Text style={styles.songTitle}>{songTitle}</Text>
+      <TouchableOpacity onPress={handleControlBarPress}>
+        <Text style={styles.songTitle}>{songTitle}</Text>
+      </TouchableOpacity>
       <View style={styles.container}>
+        <TouchableOpacity onPress={handlePlayback}>
+          <Text style={styles.playPauseButton}>
+            <AntDesign name="banckward" size={20} color="blue" />
+          </Text>
+        </TouchableOpacity>
         <TouchableOpacity onPress={handlePlayPause}>
           <Text style={styles.playPauseButton}>
             {isPlaying ? (
@@ -60,6 +130,12 @@ const ControlBar: React.FC = () => {
             )}
           </Text>
         </TouchableOpacity>
+        <TouchableOpacity onPress={playNextSong}>
+          <Text style={styles.playPauseButton}>
+            <AntDesign name="forward" size={20} color="blue" />
+          </Text>
+        </TouchableOpacity>
+
         <Text style={styles.progressText}>{formatTime(progress)}</Text>
         <View style={styles.progressContainer}>
           <View style={styles.progressBar}>
@@ -73,13 +149,21 @@ const ControlBar: React.FC = () => {
         </View>
         <Text style={styles.progressText}>{formatTime(duration)}</Text>
         {songID && <AddToLibraryButton songID={songID} />}
+        <TouchableOpacity onPress={() => dispatch(shufflePlaylist())}>
+          <AntDesign name="retweet" size={24} color="black" />
+        </TouchableOpacity>
       </View>
+      {showPlaylist && (
+        <PlaylistFloatingList
+          isVisible={showPlaylist}
+          onClose={() => setShowPlaylist(false)}
+        />
+      )}
     </View>
   ) : (
     <></>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     position: "relative",

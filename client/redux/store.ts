@@ -2,15 +2,20 @@ import { configureStore, getDefaultMiddleware } from "@reduxjs/toolkit";
 import { persistReducer, persistStore } from "redux-persist";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import rootReducer from "./reducers";
+import thunk from "redux-thunk";
 
 const persistConfig = {
   key: "root",
   storage: AsyncStorage,
   blacklist: ["song"],
 };
-const middleware = getDefaultMiddleware({
-  serializableCheck: false,
-});
+
+const middleware = [
+  ...getDefaultMiddleware({
+    serializableCheck: false,
+  }),
+  thunk,
+];
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 

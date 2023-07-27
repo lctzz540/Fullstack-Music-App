@@ -1,11 +1,16 @@
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import {
+  createAction,
+  createSlice,
+  createAsyncThunk,
+  PayloadAction,
+} from "@reduxjs/toolkit";
 import { Player } from "@react-native-community/audio-toolkit";
+import { RootState } from "../store";
 import {
   getDurationService,
   getSongFile,
   SongResponse,
 } from "../../services/songService";
-import { RootState } from "../store";
 
 interface SongState {
   songs: SongResponse[];
@@ -14,6 +19,8 @@ interface SongState {
   duration: number;
   songPlaying?: SongResponse | null;
   progress: number;
+  playlist: string[];
+  autoplayEnabled: boolean;
 }
 
 const initialState: SongState = {
@@ -22,7 +29,22 @@ const initialState: SongState = {
   isPlaying: false,
   duration: 0,
   progress: 0,
+  playlist: [],
+  autoplayEnabled: false,
 };
+
+export const addSongToPlaylist = createAsyncThunk<
+  void,
+  string,
+  { state: RootState }
+>("song/addSongToPlaylist", async (songId: string, { getState }) => {
+  const state = getState();
+  const { playlist } = state.song;
+
+  if (!playlist.some((id) => id === songId)) {
+    return songId;
+  }
+});
 
 export const playSong = createAsyncThunk<
   void,
@@ -46,7 +68,7 @@ export const playSong = createAsyncThunk<
       reader.onload = () => {
         const audioUrl = reader.result as string;
 
-        const newPlayer = new Player(audioUrl, { autoDestroy: false });
+        const newPlayer = new Player(audioUrl);
         newPlayer.play();
         dispatch(setIsPlaying(true));
 
@@ -81,6 +103,9 @@ export const pauseSong = createAsyncThunk<void, void, { state: RootState }>(
     }
   }
 );
+
+export const shufflePlaylist = createAction("song/shufflePlaylist");
+
 const songSlice = createSlice({
   name: "song",
   initialState,
@@ -107,15 +132,37 @@ const songSlice = createSlice({
     setProgress: (state, action: PayloadAction<number>) => {
       state.progress = action.payload;
     },
+    setAutoplayEnabled: (state, action: PayloadAction<boolean>) => {
+      state.autoplayEnabled = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
+      .addCase(addSongToPlaylist.pending, () => { })
+      .addCase(addSongToPlaylist.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.playlist.push(action.payload);
+        }
+      })
+      .addCase(addSongToPlaylist.rejected, () => { })
       .addCase(playSong.pending, () => { })
       .addCase(playSong.fulfilled, () => { })
       .addCase(playSong.rejected, () => { })
       .addCase(pauseSong.pending, () => { })
       .addCase(pauseSong.fulfilled, () => { })
-      .addCase(pauseSong.rejected, () => { });
+      .addCase(pauseSong.rejected, () => { })
+      .addCase(shufflePlaylist, (state) => {
+        if (state.songPlaying) {
+          const shuffledPlaylist = [...state.playlist];
+          const currentIndex = shuffledPlaylist.indexOf(state.songPlaying.id);
+          if (currentIndex !== -1) {
+            const [removedSongId] = shuffledPlaylist.splice(currentIndex, 1);
+            shuffledPlaylist.sort(() => Math.random() - 0.5);
+            shuffledPlaylist.unshift(removedSongId);
+            state.playlist = shuffledPlaylist;
+          }
+        }
+      });
   },
 });
 
@@ -126,6 +173,7 @@ export const {
   setDuration,
   setSongPlaying,
   setProgress,
+  setAutoplayEnabled,
 } = songSlice.actions;
 
 export default songSlice.reducer;

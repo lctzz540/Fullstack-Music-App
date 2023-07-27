@@ -2,8 +2,11 @@ import React, { useState } from "react";
 import { View, Text, Button, StyleSheet } from "react-native";
 import authService from "../services/authService";
 import { Input } from "react-native-elements";
+export type SignupScreenProps = {
+  navigation: any;
+};
 
-const SignupScreen: React.FC = () => {
+const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -17,7 +20,12 @@ const SignupScreen: React.FC = () => {
         firstName,
         lastName,
       });
-      console.log(response.data);
+      if (response.status == 200) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Login" }],
+        });
+      }
     } catch (error) {
       console.error(error);
     }

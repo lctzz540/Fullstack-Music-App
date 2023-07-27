@@ -3,6 +3,7 @@ import { View, FlatList, StyleSheet } from "react-native";
 import axios from "axios";
 import { useIsFocused } from "@react-navigation/native";
 import SongItem from "./SongItem";
+import { API_URL } from "@env";
 
 const TopSongs = () => {
   const [topSongs, setTopSongs] = useState<any[]>([]);
@@ -10,9 +11,7 @@ const TopSongs = () => {
 
   const fetchData = async () => {
     try {
-      const apiResponse = await axios.get(
-        "http://localhost:3000/api/songs/getallsongs"
-      );
+      const apiResponse = await axios.get(`${API_URL}/api/songs/getallsongs`);
       const data = await apiResponse.data;
       setTopSongs(data);
     } catch (error) {
@@ -30,11 +29,7 @@ const TopSongs = () => {
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={topSongs}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-      />
+      <FlatList data={topSongs} renderItem={renderItem} />
     </View>
   );
 };

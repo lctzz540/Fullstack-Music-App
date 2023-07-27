@@ -1,18 +1,24 @@
 import React from "react";
 import { Text, Image, TouchableOpacity, StyleSheet, View } from "react-native";
-import useSongPlayer from "../hooks/useSongPlayer";
 import AddToLibraryButton from "./AddToLibraryButton";
 import { API_URL } from "@env";
+import { useDispatch } from "react-redux";
+import { addSongToPlaylist, playSong } from "../redux/slices/songSlice";
+import { AntDesign } from "@expo/vector-icons";
 
 interface SongItemProps {
   item: any;
 }
 
 const SongItem: React.FC<SongItemProps> = ({ item }) => {
-  const playSong = useSongPlayer();
+  const dispatch = useDispatch();
 
   const handlePlaySong = () => {
-    playSong(item);
+    dispatch(playSong(item));
+    dispatch(addSongToPlaylist(item.id));
+  };
+  const handleAddToPlaylist = () => {
+    dispatch(addSongToPlaylist(item.id));
   };
 
   return (
@@ -26,7 +32,12 @@ const SongItem: React.FC<SongItemProps> = ({ item }) => {
         />
         <Text style={styles.title}>{item.title}</Text>
       </TouchableOpacity>
-      <AddToLibraryButton songID={item.id} />
+      <View style={styles.buttonsContainer}>
+        <AddToLibraryButton songID={item.id} />
+        <TouchableOpacity onPress={handleAddToPlaylist}>
+          <AntDesign name="pluscircleo" size={20} color="black" />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -53,6 +64,10 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     marginRight: 10,
+  },
+  buttonsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 });
 
