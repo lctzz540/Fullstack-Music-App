@@ -11,6 +11,7 @@ import {
   getSongFile,
   SongResponse,
 } from "../../services/songService";
+import { API_URL } from "@env";
 
 interface SongState {
   songs: SongResponse[];
@@ -64,20 +65,17 @@ export const playSong = createAsyncThunk<
       dispatch(setSongPlaying(song));
       dispatch(setDuration(await getDurationService(song.id)));
 
-      const reader = new FileReader();
-      reader.onload = () => {
-        const audioUrl = reader.result as string;
+      const audioUrl = `${API_URL}/api/songs/playsong?id=${song.id}`;
 
-        const newPlayer = new Player(audioUrl);
-        newPlayer.play();
-        dispatch(setIsPlaying(true));
+      const newPlayer = new Player(audioUrl);
+      newPlayer.play();
+      dispatch(setIsPlaying(true));
 
-        if (player) {
-          player.destroy();
-        }
+      if (player) {
+        player.destroy();
+      }
 
-        dispatch(setPlayer(newPlayer));
-      };
+      dispatch(setPlayer(newPlayer));
 
       reader.readAsDataURL(audioBlob);
     } catch (error) {
