@@ -40,9 +40,9 @@ const SearchBar = () => {
           })),
           ...(artists.length != 0
             ? artists.map((artist: any) => ({
-                type: "artist",
-                item: artist,
-              }))
+              type: "artist",
+              item: artist,
+            }))
             : []),
         ];
 

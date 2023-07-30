@@ -51,17 +51,13 @@ const ControlBar: React.FC = () => {
 
   useEffect(() => {
     let progressInterval: NodeJS.Timeout | null = null;
-    if (isPlaying && progress < duration - 1) {
+    if (isPlaying && progress < Math.floor(duration)) {
       progressInterval = setInterval(() => {
         const currentTime = progress + 1;
         dispatch(setProgress(currentTime));
       }, 1000);
     } else {
-      if (
-        !isPlaying &&
-        playlistSongIds.length != 0 &&
-        progress == duration - 1
-      ) {
+      if (progress == Math.floor(duration)) {
         playNextSong();
       }
     }

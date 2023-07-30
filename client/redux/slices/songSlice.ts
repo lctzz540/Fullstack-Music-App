@@ -6,11 +6,7 @@ import {
 } from "@reduxjs/toolkit";
 import { Player } from "@react-native-community/audio-toolkit";
 import { RootState } from "../store";
-import {
-  getDurationService,
-  getSongFile,
-  SongResponse,
-} from "../../services/songService";
+import { getDurationService, SongResponse } from "../../services/songService";
 import { API_URL } from "@env";
 
 interface SongState {
@@ -61,7 +57,6 @@ export const playSong = createAsyncThunk<
     }
 
     try {
-      const audioBlob = await getSongFile(song.id);
       dispatch(setSongPlaying(song));
       dispatch(setDuration(await getDurationService(song.id)));
 
@@ -76,8 +71,6 @@ export const playSong = createAsyncThunk<
       }
 
       dispatch(setPlayer(newPlayer));
-
-      reader.readAsDataURL(audioBlob);
     } catch (error) {
       console.error("Failed to play the song:", error);
     }
