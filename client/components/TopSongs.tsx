@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { View, FlatList, StyleSheet } from "react-native";
-import axios from "axios";
 import { useIsFocused } from "@react-navigation/native";
 import SongItem from "./SongItem";
-import { API_URL } from "@env";
+import { getAllSongs } from "../services/songService";
 
 const TopSongs = () => {
   const [topSongs, setTopSongs] = useState<any[]>([]);
@@ -11,8 +10,7 @@ const TopSongs = () => {
 
   const fetchData = async () => {
     try {
-      const apiResponse = await axios.get(`${API_URL}/api/songs/getallsongs`);
-      const data = await apiResponse.data;
+      const data = await getAllSongs();
       setTopSongs(data);
     } catch (error) {
       console.error("Failed to fetch top songs:", error);

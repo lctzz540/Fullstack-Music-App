@@ -15,7 +15,7 @@ export interface Song {
 
 export async function getAllSongs(): Promise<Song[]> {
   try {
-    const response = await axios.get(`${API_BASE_URL}/songs`);
+    const response = await axios.get(`${API_BASE_URL}/getallsongs`);
     return response.data;
   } catch (error) {
     throw new Error("Failed to fetch songs");
